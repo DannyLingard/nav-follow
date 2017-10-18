@@ -1,0 +1,2 @@
+# Ignore api json files due to size
+src/js/api
