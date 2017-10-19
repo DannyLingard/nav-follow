@@ -1,0 +1,5 @@
+{
+    "eslint.autoFixOnSave": true,
+    "editor.snippetSuggestions": "top",
+    "editor.tabSize": 2
+}
