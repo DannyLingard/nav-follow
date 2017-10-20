@@ -3,6 +3,10 @@ import Trigger from './Trigger';
 
 export default class FollowNav {
   constructor(elem, triggerSelector, triggerDropdownSelector, dropdownBackgroundSelector) {
+    this._elem = null;
+    this._geometries = null;
+
+    // Setters
     this.elem = elem;
 
     // Triggers
@@ -27,6 +31,8 @@ export default class FollowNav {
     this.dropdownBackground = null;
 
     // Movements
+    this.accumParentX = 0;
+    this.parentX = null;
     this.initialX = null;
     this.distanceX = null;
     this.directionX = null;
@@ -67,6 +73,7 @@ export default class FollowNav {
 
     this.toggle = false;
 
+    this.calculateGeometries();
     this.assignTriggerElems();
     this.createTriggers();
 
@@ -74,6 +81,22 @@ export default class FollowNav {
     this.createDropdownBackground();
 
     this.addEventListeners();
+  }
+
+  get elem() {
+    return this._elem;
+  }
+
+  set elem(obj) {
+    this._elem = obj;
+  }
+
+  get geometries() {
+    return this._geometries;
+  }
+
+  set geometries(obj) {
+    this._geometries = obj;
   }
 
   addEventListeners() {
@@ -128,6 +151,9 @@ export default class FollowNav {
 
   handleTriggerEntry(trigger) {
     console.log('Trigger Entry ============');
+    console.log('====================================');
+    console.log(trigger);
+    console.log('====================================');
     // Assign Active Trigger
     this.activeTrigger = trigger;
     // Assign Active Trigger Dropdown
@@ -150,6 +176,10 @@ export default class FollowNav {
     // console.log('targetWidth', this.targetWidth);
     // console.log('initialWidth', this.initialWidth);
 
+    console.log('InitialX', this.initialX);
+    console.log('TargetX', this.targetX);
+    // console.log('TargetScaleY', this.targetScaleY);
+
     this.initializeMeasures();
     this.initializeDimensions();
 
@@ -169,6 +199,55 @@ export default class FollowNav {
     this.previousHeight = this.targetHeight;
 
     this.firstTriggerEntry = false;
+  }
+
+  calculateGeometries() {
+    const geometries = this.elem.getBoundingClientRect();
+    console.log('====================================');
+    console.log(geometries);
+    console.log('====================================');
+    this.geometries = geometries;
+
+    // const elem = this.elem;
+
+    this.calculateParentX(this.elem);
+
+    // function getParentX(e) {
+    //   const parent = e.parentNode;
+    //   const geo = e.getBoundingClientRect();
+    //   const { x, width } = geo;
+    //   this.accumParentX += x;
+
+    //   if (e.tagName !== 'BODY') {
+    //     getParentX(parent);
+    //   }
+    // }
+
+    // console.log('====================================');
+    // console.log(accum - this.geometries.x);
+    // console.log('====================================');
+  }
+
+  calculateParentX(e) {
+    const parent = e.parentNode;
+    const geo = e.getBoundingClientRect();
+    const { x, width } = geo;
+    console.log('====================================');
+    console.log('Parent', e.tagName, x);
+    console.log('====================================');
+    if (!this.parentX) {
+      this.accumParentX += x;
+    }
+
+    if (!x === this.parentX) {
+      this.accumParentX += x;
+    }
+
+    this.parentX = x;
+
+    if (e.tagName !== 'BODY') {
+      this.calculateParentX(parent);
+    }
   }
 
   calculateMaxDropdownArea(width, height) {
@@ -221,7 +300,10 @@ export default class FollowNav {
     // DropdownBackgorund Geometires
     const { width: dropdownWidth } = this.dropdownBackground.geometries;
 
-    this.targetX = triggerX + (triggerWidth / 2) - (dropdownWidth / 2);
+    // Parent Offsets
+    const offset = this.accumParentX;
+
+    this.targetX = triggerX + (triggerWidth / 2) - (dropdownWidth / 2) - offset;
   }
 
   calculateDropdownGeometries() {

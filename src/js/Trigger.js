@@ -35,51 +35,13 @@ export default class Trigger {
   }
 
   addEventListeners() {
-    // this.elem.addEventListener('mouseenter', () => {
-    //   // this.handleMouseEnter(evt);
-    //   this.testCallback();
-    // });
-
     this.elem.addEventListener('mouseenter', this.handleMouseEnter);
-
-    // this.elem.addEventListener('mouseleave', () => {
-    //   // this.handleMouseLeave();
-    //   this.testCallback();
-    // });
-
     this.elem.addEventListener('mouseleave', this.handleMouseLeave);
-
-    // this.elem.addEventListener('mouseenter', () => {
-    //   this.handleTriggerEntry();
-    // });
-
-    // this.elem.addEventListener('mouseleave', () => {
-    //   this.handleTriggerExit();
-    // });
   }
 
   removeEventListeners() {
-    // this.elem.removeEventListener('mouseenter', () => {
-    //   // this.handleMouseEnter(e);
-    //   this.testCallback();
-    // });
-
     this.elem.removeEventListener('mouseenter', this.handleMouseEnter);
-
-    // this.elem.removeEventListener('mouseleave', () => {
-    //   // this.handleMouseLeave();
-    //   this.testCallback();
-    // });
-
     this.elem.removeEventListener('mouseleave', this.handleMouseLeave);
-
-    // this.elem.removeEventListener('mouseenter', () => {
-    //   this.handleTriggerEntry();
-    // });
-
-    // this.elem.removeEventListener('mouseleave', () => {
-    //   this.handleTriggerExit();
-    // });
   }
 
   primeElement() {
@@ -108,16 +70,8 @@ export default class Trigger {
     );
   }
 
-  handleMouseEnter(evt) {
-    console.log('====================================');
-    console.log(evt);
-    console.log('====================================');
+  handleMouseEnter() {
     this.handleEnter();
-    // console.log('====================================');
-    // console.log(this.name, 'Dropdown Geometries');
-    // console.log(this.dropdown.geometries);
-    // console.log('====================================');
-    // this.dropdownBackground.move(this.geometries.left);
   }
 
   handleMouseLeave() {
@@ -126,16 +80,13 @@ export default class Trigger {
 
   handleEnter() {
     this.handleTriggerEntry(this);
-    // this.handleTriggerEntry(this);
     this.dropdown.expand();
-    console.log('Trigger Entry');
     // this.dropdownBackground.expand();
   }
 
   handleLeave() {
     this.handleTriggerExit(this);
     this.dropdown.collapse();
-    console.log('Trigger Exit');
     // this.dropdownBackground.collapse();
   }
 

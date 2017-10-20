@@ -1,6 +1,6 @@
 export default class DropdownBackground {
   constructor(elem, width, height) {
-    this._elem = elem;
+    this._elem = null;
     this._geometries = null;
     this._x = 0;
     this._width = 0;
@@ -9,6 +9,7 @@ export default class DropdownBackground {
     this._scaleY = 0;
 
     // Setter Methods
+    this.elem = elem;
     this.width = width;
     this.height = height;
 
