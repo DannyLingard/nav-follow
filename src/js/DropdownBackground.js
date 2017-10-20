@@ -1,21 +1,29 @@
 export default class DropdownBackground {
-  constructor(elem) {
-    this.elem = elem;
+  constructor(elem, width, height) {
+    this._elem = elem;
     this._geometries = null;
-
-    this._initialX = 0;
     this._x = 0;
+    this._width = 0;
+    this._height = 0;
+    this._scaleX = 0;
+    this._scaleY = 0;
 
     // Setter Methods
-    this.geometries = this.elem.getBoundingClientRect();
+    this.width = width;
+    this.height = height;
 
-    // this.elem.style.transform = `translateX(${this._x}px)`;
+    this.init();
+    this.calculateGeometries();
+  }
 
-    // this.requestAnimationFrame = this.requestAnimationFrame.bind(this);
+  init() {
+    this.elem.style.width = `${this.width}px`;
+    this.elem.style.height = `${this.height}px`;
+    this.collapse();
   }
 
   calculateGeometries() {
-    this._geometries = this.elem.getBoundingClientRect();
+    this.geometries = this.elem.getBoundingClientRect();
   }
 
   expand() {
@@ -26,22 +34,24 @@ export default class DropdownBackground {
     this.elem.setAttribute('aria-expanded', 'false');
   }
 
+  move() {
+    this.elem.style.transform = `translateX(${this._x}px) scaleX(${this._scaleX}) scaleY(${this._scaleY})`;
+  }
+
+  get elem() {
+    return this._elem;
+  }
+
+  set elem(obj) {
+    this._elem = obj;
+  }
+
   get geometries() {
     return this._geometries;
   }
 
   set geometries(obj) {
     this._geometries = obj;
-  }
-
-
-  move() {
-    this.elem.style.transform = `translateX(${this._x}px)`;
-    // console.log('====================================');
-    // console.log('Move Trigger');
-    // console.log(this._x);
-    // console.log('====================================');
-    // this.requestAnimationFrame(this.update);
   }
 
   get x() {
@@ -52,10 +62,35 @@ export default class DropdownBackground {
     this._x = value;
   }
 
-  update(deltaTime) {
-    console.log('====================================');
-    console.log(deltaTime);
-    console.log('====================================');
-    // this.requestAnimationFrame(this.update);
+  get width() {
+    return this._width;
+  }
+
+  set width(value) {
+    this._width = value;
+  }
+
+  get height() {
+    return this._height;
+  }
+
+  set height(value) {
+    this._height = value;
+  }
+
+  get scaleX() {
+    return this._scaleX;
+  }
+
+  set scaleX(value) {
+    this._scaleX = value;
+  }
+
+  get scaleY() {
+    return this._scaleY;
+  }
+
+  set scaleY(value) {
+    this._scaleY = value;
   }
 }

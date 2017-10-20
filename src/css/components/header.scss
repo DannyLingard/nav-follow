@@ -62,15 +62,20 @@ nav {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	width: 300px;
-	height: 300px;
+	// width: 100px;
+	// height: 100px;
 	background-color: $background-light;
+	// background-color: $grey;
 	box-shadow: 0 50px 100px rgba(50,50,93,0.1), 0 15px 35px rgba(0,0,0,0.1);
 	border: {
-		radius: 12px;
+		color: $border-light;
+		radius: 4px;
+		style: solid;
+		width: 1px;
 	}
 	will-change: opacity;
 	// transition: transform 0.2s ease-in;
+	transform-origin: top center;
 	pointer-events: none;
 	opacity: 0;
 	
@@ -104,6 +109,7 @@ nav {
 	margin: 0 auto;
 	padding: 0;
 	list-style: none;
+	// overflow: visible;
 }
 
 .nav-menu_item {
@@ -112,11 +118,12 @@ nav {
 		direction: row;
 		grow: 1;
 		shrink: 1;
-		// basis: 100%;
+		basis: 25%;
 	}
 	align-items: stretch;
 	justify-content: center;
 	position: relative;
+	// overflow: visible;
 
 	&:hover{
 		background-color: blue;
@@ -144,17 +151,25 @@ nav {
 	display: flex;
 	flex: {
 		direction: column;
+		// grow: 1;
+		// shrink: 0;
+		// basis: 100%;
 	}
+	align-items: stretch;
+	justify-content: stretch;
 	position: absolute;
 	top: 100%;
 	left: 50%;
-	min-width: 200px;
-	width: auto;
+	min-width: 100%;
+	min-height: 100%;
+	height: auto;
+	// width: 100%;
+	// width: 100vw;
 	margin: 0;
-	padding: 0;
+	padding: 0.875rem;
 	list-style: none;
 	transform: translate(-50%, 0);
-	
+	// background-color: transparentize($background-light, 0.5);
 	
 	// Attribute States
 	&[aria-expanded="true"] {
@@ -173,22 +188,33 @@ nav {
 .nav-submenu_item {
 	display: flex;
 	flex: {
+		direction: column;
 		grow: 1;
-		shrink: 0;
-		basis: 50px;
+		shrink: 1;
+		basis: 1;
 	}
-	align-items: stretch;
+	position: relative;
+	align-items: center;
 	justify-content: center;
-	width: 100%;
+	min-height: 50px;
+	height: 100%;
+	padding: 0 0.875rem;
 	
 	> a {
 		display: flex;
 		flex: {
+			direction: column;
 			grow: 1;
+			shrink: 0;
+			basis: 1;
 		}
 		align-items: center;
 		justify-content: center;
+		width: 100%;
+		min-height: 50px;
+		height: 100%;
 		text-decoration: none;
+		white-space: nowrap;
 		color: $text-dark;
 	}	
 }
