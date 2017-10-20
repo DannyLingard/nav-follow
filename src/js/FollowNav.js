@@ -31,7 +31,12 @@ export default class FollowNav {
     this.toggle = false;
 
     // Movements
-    this.intitialX = null;
+    this.initialX = null;
+    this.distanceX = null;
+    this.directionX = null;
+    this.screenX = null;
+    this.currentX = null;
+    this.progressX = null;
     this.targetX = null;
 
     // Game Times
@@ -93,21 +98,27 @@ export default class FollowNav {
 
     this.calculateTargetX();
 
-    this.dropdownBackground.x = this.targetX;
-
     if (this.firstTriggerEntry) {
-      this.dropdownBackground.move();
+      this.dropdownBackground.x = this.targetX;
     }
+
+    console.log('Trigger Entry InitialX', this.initialX);
+    const distance = this.targetX - this.initialX;
+
+    this.distanceX = Math.abs(distance);
+    this.directionX = distance > 0 ? 1 : 0;
+    this.screenX = this.distanceX;
+    this.currentX = this.distanceX;
 
     this.dropdownBackground.expand();
   }
 
   handleTriggerExit() {
     this.activeTrigger = null;
-    this.dropdownBackground.x = 0;
+    // this.dropdownBackground.x = 0;
 
     this.dropdownBackground.collapse();
-
+    this.initialX = this.targetX;
     this.firstTriggerEntry = false;
   }
 
@@ -118,12 +129,13 @@ export default class FollowNav {
     const { width: dropdownWidth } = this.dropdownBackground.geometries;
 
     this.targetX = triggerX + (triggerWidth / 2) - (dropdownWidth / 2);
+    // this.targetX = triggerX;
   }
 
   onStart() {
     console.log('Starting');
-    this.logTimers();
     this.resetTimers();
+    this.resetMovements();
 
     // Initiate Trigger Elements
     this.triggers.forEach((trigger) => {
@@ -134,10 +146,9 @@ export default class FollowNav {
 
     const { x } = this.dropdownBackground.geometries;
 
-    this.intitialX = x;
+    this.initialX = x;
 
     this.onManageTime();
-    // this.addRequestAnimationFrame();
   }
 
   onEnd() {
@@ -148,19 +159,19 @@ export default class FollowNav {
     this.firstTriggerEntry = true;
   }
 
-  addRequestAnimationFrame() {
-    // this.requestAnimationFrame = requestAnimationFrame((deltaTime) => { this.onManageTime(deltaTime); });
+  addRequestAnimationFrame = () => {
+    this.requestAnimationFrameId = requestAnimationFrame((deltaTime) => {
+      this.onManageTime(deltaTime);
+    });
   }
 
   onManageTime(millis) {
-    // console.log('frame', this._frame);
     console.log('Begin Loop ============');
 
-    this.requestAnimationFrameId = requestAnimationFrame((deltaTime) => { this.onManageTime(deltaTime); });
+    this.addRequestAnimationFrame();
     this._frame += 1;
-    // this.logTimers();
-    console.log('RAF', this.requestAnimationFrameId);
-    // console.log('ALTRAF', attribB);
+
+    // console.log('RAF', this.requestAnimationFrameId);
 
     // this.requestAnimationFrame = requestAnimationFrame(this.onManageTime.bind(this));
     if (this._lastTime) {
@@ -168,11 +179,6 @@ export default class FollowNav {
       this.draw();
     }
     this._lastTime = millis;
-    // Initiate Animation
-    // this.requestAnimationFrame = requestAnimationFrame((deltaTime) => { this.onManageTime(deltaTime); });
-    // this.requestAnimationFrame = requestAnimationFrame(this.onManageTime.bind(this));
-    // this.requestAnimationFrame((deltaTime) => { this.onManageTime(deltaTime); });
-    // requestAnimationFrame((deltaTime) => { this.onManageTime(deltaTime); });
   }
 
   simulate(deltaTime) {
@@ -180,13 +186,41 @@ export default class FollowNav {
     // console.log('Simulator');
 
     // Get Coords of Specific Trigger
-    if (this.dropdownBackground.x === this.targetX) {
-      this.toggle = false;
+    // if (this.dropdownBackground.x === this.targetX) {
+    //   this.toggle = false;
+    // }
+    console.log('backgorundX', this.dropdownBackground.x);
+
+    if (!this.firstTriggerEntry) {
+      this.screenX += 0 - this.screenX / 20;
+      this.progressX = (this.distanceX - this.screenX);
+
+      if (this.directionX === 1) { // Forwards
+        this.currentX = this.initialX + this.progressX;
+      } else { // Backwards
+        this.currentX = this.initialX - this.progressX;
+      }
+
+      this.dropdownBackground.x = this.currentX;
     }
+
+    if (this.directionX === 1) { // Forwards
+
+    }
+
 
     if (!this.toggle) {
       this.terminate();
     }
+
+    console.log('initialX', this.initialX);
+    console.log('distanceX', this.distanceX);
+    console.log('directionX', this.directionX);
+    console.log('targetX', this.targetX);
+    console.log('currenX', this.currentX);
+    console.log('progressX', this.progressX);
+    console.log('screenX', this.screenX);
+    console.log('Finish Loop ======');
   }
 
   update(deltaTime) {
@@ -202,7 +236,7 @@ export default class FollowNav {
 
   draw() {
     // Draw based on simulated results
-    this.dropdownBackground.move(this.targetX);
+    this.dropdownBackground.move();
   }
 
   logTimers() {
@@ -214,6 +248,17 @@ export default class FollowNav {
     console.log('Accum', this._accumlator);
     console.log('Step', this.step);
     console.log('==================');
+  }
+
+  resetMovements() {
+    console.log('Reset Measures');
+    this.initialX = null;
+    this.screenX = null;
+    this.currentX = null;
+    this.progressX = null;
+    this.targetX = null;
+    this.distanceX = null;
+    this.directionX = null;
   }
 
   resetTimers() {
@@ -233,10 +278,12 @@ export default class FollowNav {
 
     // const test = this.requestAnimationFrame + 1;
 
+
     cancelAnimationFrame(this.requestAnimationFrameId);
 
     this.toggle = true;
     this.resetTimers();
+
     // this._lastTime = 0;
     // console.log('Class', this);
   }

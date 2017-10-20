@@ -8,6 +8,8 @@ module.exports = {
         // "no-confusing-arrow": ["error", {"allowParens": true}],
         "no-confusing-arrow": 0,
         "no-use-before-define": 0,
+        "no-underscore-dangle": 0,
+        "no-mixed-operators": 0,
     },
     "globals": {
         "document": false
