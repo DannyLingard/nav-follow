@@ -15,12 +15,18 @@ export default class DropdownBackground {
 
     this.init();
     this.calculateGeometries();
+
+    this.debug();
   }
 
   init() {
     this.elem.style.width = `${this.width}px`;
     this.elem.style.height = `${this.height}px`;
     this.collapse();
+  }
+
+  debug() {
+    this.expand();
   }
 
   calculateGeometries() {

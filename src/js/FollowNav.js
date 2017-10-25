@@ -1,8 +1,9 @@
+import DropdownArrow from './DropdownArrow';
 import DropdownBackground from './DropdownBackground';
 import Trigger from './Trigger';
 
 export default class FollowNav {
-  constructor(elem, triggerSelector, triggerDropdownSelector, dropdownBackgroundSelector) {
+  constructor(elem, triggerSelector, triggerDropdownSelector, dropdownArrowSelector, dropdownBackgroundSelector) {
     this._elem = null;
     this._geometries = null;
 
@@ -25,6 +26,11 @@ export default class FollowNav {
     // Active Trigger Dropdown
     this.dropdown = null;
 
+    // Dropdown Arrow
+    this.dropdownArrowSelector = dropdownArrowSelector;
+    this.dropdownArrowElem = null;
+    this.dropdownArrow = null;
+
     // Dropdown Background
     this.dropdownBackgroundSelector = dropdownBackgroundSelector;
     this.dropdownBackgroundElem = null;
@@ -33,6 +39,7 @@ export default class FollowNav {
     // Movements
     this.accumParentX = 0;
     this.parentX = null;
+
     this.initialX = null;
     this.distanceX = null;
     this.directionX = null;
@@ -40,6 +47,14 @@ export default class FollowNav {
     this.currentX = null;
     this.progressX = null;
     this.targetX = null;
+
+    this.dropdownArrowInitialX = null;
+    this.dropdownArrowDistanceX = null;
+    this.dropdownArrowDirectionX = null;
+    this.dropdownArrowScreenX = null;
+    this.dropdownArrowCurrentX = null;
+    this.dropdownArrowProgressX = null;
+    this.dropdownArrowTargetX = null;
 
     // Dimensions
     this.initialWidth = null;
@@ -50,16 +65,30 @@ export default class FollowNav {
     this.heightDiff = null;
     this.isWider = null;
     this.isTaller = null;
-    this.screenWidth = null;
-    this.currentWidth = null;
+    // this.screenWidth = null;
+    // this.currentWidth = null;
     this.previousWidth = null;  // from previous trigger
     this.previousHeight = null; // from previous trigger
     this.progressWidth = null;
-    this.screenHeight = null;
-    this.currentHeight = null;
+    // this.screenHeight = null;
+    // this.currentHeight = null;
     this.progressHeight = null;
+
+    // Scale X & Y
+    this.initialScaleX = null;  // from previous trigger
+    this.initialScaleY = null; // from previous trigger
+    this.screenScaleX = null;
+    this.screenScaleY = null;
+    this.currentScaleX = null;
+    this.currentScaleY = null;
+    this.previousScaleX = null;  // from previous trigger
+    this.previousScaleY = null; // from previous trigger
+    this.progressScaleX = null;
+    this.progressScaleY = null;
     this.scaleX = null;
     this.scaleY = null;
+    this.scaleXDiff = null;
+    this.scaleYDiff = null;
     this.targetScaleX = null;
     this.targetScaleY = null;
 
@@ -74,9 +103,16 @@ export default class FollowNav {
     this.toggle = false;
 
     this.calculateGeometries();
+
+    // Triggers Creation
     this.assignTriggerElems();
     this.createTriggers();
 
+    // DropdownArrow Creation
+    this.assignDropdownArrowElem();
+    this.createDropdownArrow();
+
+    // DropdownBackground Creation
     this.assignDropdownBackgroundElem();
     this.createDropdownBackground();
 
@@ -107,6 +143,18 @@ export default class FollowNav {
     this.elem.addEventListener('mouseleave', (evt) => {
       this.handleMouseLeave(evt);
     });
+  }
+
+  assignDropdownArrowElem() {
+    this.dropdownArrowElem = this.elem.querySelector(this.dropdownArrowSelector);
+  }
+
+  createDropdownArrow() {
+    this.dropdownArrow = new DropdownArrow(
+      this.dropdownArrowElem,
+      // this.maxDropdownAreaWidth,
+      // this.maxDropdownAreaHeight,
+    );
   }
 
   assignDropdownBackgroundElem() {
@@ -150,10 +198,6 @@ export default class FollowNav {
   }
 
   handleTriggerEntry(trigger) {
-    console.log('Trigger Entry ============');
-    console.log('====================================');
-    console.log(trigger);
-    console.log('====================================');
     // Assign Active Trigger
     this.activeTrigger = trigger;
     // Assign Active Trigger Dropdown
@@ -165,47 +209,65 @@ export default class FollowNav {
     this.calculateScaleY();
 
     if (this.firstTriggerEntry) {
+      this.dropdownArrow.x = this.dropdownArrowTargetX;
       this.dropdownBackground.x = this.targetX;
       this.dropdownBackground.scaleX = this.targetScaleX;
       this.dropdownBackground.scaleY = this.targetScaleY;
     }
 
-    // console.log('TargetScaleX', this.targetScaleX);
-    // console.log('TargetScaleY', this.targetScaleY);
-    // console.log('previousWidth', this.previousWidth);
-    // console.log('targetWidth', this.targetWidth);
-    // console.log('initialWidth', this.initialWidth);
 
-    console.log('InitialX', this.initialX);
-    console.log('TargetX', this.targetX);
+    // console.log('InitialX', this.initialX);
+    // console.log('TargetX', this.targetX);
     // console.log('TargetScaleY', this.targetScaleY);
 
     this.initializeMeasures();
     this.initializeDimensions();
 
-    this.dropdownBackground.expand();
+    console.log('====================================');
+    console.log('-- ScaleX   ------------------------');
+    console.log('currentScaleX', this.currentScaleX);
+    console.log('initialScaleX', this.initialScaleX);
+    console.log('screenScaleX', this.screenScaleX);
+    console.log('scaleXDiff', this.scaleXDiff);
+    console.log('TargetScaleX', this.targetScaleX);
+    console.log('-- Width    ------------------------');
+    console.log('isWider', this.isWider);
+    console.log('previousWidth', this.previousWidth);
+    console.log('targetWidth', this.targetWidth);
+    console.log('initialWidth', this.initialWidth);
+    console.log('====================================');
+
+
+    // this.dropdownBackground.expand();
   }
 
   handleTriggerExit() {
-    console.log('Trigger Exit ============');
+    // console.log('Trigger Exit ============');
     this.activeTrigger = null;
     // this.dropdownBackground.x = 0;
 
-    this.dropdownBackground.collapse();
+    // this.dropdownBackground.collapse();
 
     // Persist Previous Trigger Attributes
     this.initialX = this.targetX;
+    this.dropdownArrowInitialX = this.dropdownArrowTargetX;
+
+    // Dimensions
     this.previousWidth = this.targetWidth;
     this.previousHeight = this.targetHeight;
+
+    // Scale
+    this.initialScaleX = this.targetScaleX;
+    this.initialScaleY = this.targetScaleY;
 
     this.firstTriggerEntry = false;
   }
 
   calculateGeometries() {
     const geometries = this.elem.getBoundingClientRect();
-    console.log('====================================');
-    console.log(geometries);
-    console.log('====================================');
+    // console.log('====================================');
+    // console.log(geometries);
+    // console.log('====================================');
     this.geometries = geometries;
 
     // const elem = this.elem;
@@ -232,9 +294,9 @@ export default class FollowNav {
     const parent = e.parentNode;
     const geo = e.getBoundingClientRect();
     const { x, width } = geo;
-    console.log('====================================');
-    console.log('Parent', e.tagName, x);
-    console.log('====================================');
+    // console.log('====================================');
+    // console.log('Parent', e.tagName, x);
+    // console.log('====================================');
     if (!this.parentX) {
       this.accumParentX += x;
     }
@@ -270,8 +332,9 @@ export default class FollowNav {
   calculateScaleX() {
     if (!this.firstTriggerEntry) {
       if (this.isWider !== 0) {
-        console.log('isWider');
-        this.targetScaleX = this.targetWidth / (this.previousWidth - this.initialWidth);
+        // console.log('isWider');
+        // this.targetScaleX = this.targetWidth / (this.previousWidth - this.initialWidth);
+        this.targetScaleX = this.targetWidth / this.initialWidth;
       } else {
         this.targetScaleX = this.targetWidth / this.initialWidth;
       }
@@ -283,7 +346,8 @@ export default class FollowNav {
   calculateScaleY() {
     if (!this.firstTriggerEntry) {
       if (this.isTaller !== 0) {
-        this.targetScaleY = this.targetHeight / (this.previousHeight - this.initialHeight);
+        // this.targetScaleY = this.targetHeight / (this.previousHeight - this.initialHeight);
+        this.targetScaleY = this.targetHeight / this.initialHeight;
       } else {
         this.targetScaleY = this.targetHeight / this.initialHeight;
       }
@@ -297,20 +361,24 @@ export default class FollowNav {
     const {
       x: triggerX,
       width: triggerWidth } = this.activeTrigger.geometries;
-    // DropdownBackgorund Geometires
-    const { width: dropdownWidth } = this.dropdownBackground.geometries;
+
+    // DropdownBackground Geometires
+    const { width: dropdownArrowWidth } = this.dropdownArrow.geometries;
+
+    // DropdownBackground Geometires
+    const { width: dropdownBackgroundWidth } = this.dropdownBackground.geometries;
 
     // Parent Offsets
     const offset = this.accumParentX;
 
-    this.targetX = triggerX + (triggerWidth / 2) - (dropdownWidth / 2) - offset;
+    this.dropdownArrowTargetX = triggerX + (triggerWidth / 2) - (dropdownArrowWidth / 2) - offset;
+    this.targetX = triggerX + (triggerWidth / 2) - (dropdownBackgroundWidth / 2) - offset;
   }
 
   calculateDropdownGeometries() {
     const {
       width: dropdownWidth,
       height: dropdownHeight } = this.dropdown.geometries;
-
 
     this.targetWidth = dropdownWidth;
     this.targetHeight = dropdownHeight;
@@ -326,9 +394,18 @@ export default class FollowNav {
   }
 
   initializeMeasures() {
-    const distance = this.targetX - this.initialX;
-    this.distanceX = Math.abs(distance);
-    this.directionX = distance > 0 ? 1 : 0;
+    const dropdownArrowDistance = this.dropdownArrowTargetX - this.dropdownArrowInitialX;
+    const dropdownBackgroundDistance = this.targetX - this.initialX;
+
+    // DropdownArrow
+    this.dropdownArrowDistanceX = Math.abs(dropdownArrowDistance);
+    this.dropdownArrowDirectionX = dropdownArrowDistance > 0 ? 1 : 0;
+    this.dropdownArrowScreenX = this.dropdownArrowDistanceX;
+    this.dropdownArrowCurrentX = this.dropdownArrowDistanceX;
+
+    // DropdownBackground
+    this.distanceX = Math.abs(dropdownBackgroundDistance);
+    this.directionX = dropdownBackgroundDistance > 0 ? 1 : 0;
     this.screenX = this.distanceX;
     this.currentX = this.distanceX;
   }
@@ -336,34 +413,45 @@ export default class FollowNav {
   initializeDimensions() {
     const widthDiff = this.targetWidth - this.initialWidth;
     const heightDiff = this.targetHeight - this.initialHeight;
+
+    const scaleXDiff = this.targetScaleX - this.initialScaleX;
+    const scaleYDiff = this.targetScaleY - this.initialScaleY;
     // const widthDiff = this.targetWidth - this.previousWidth;
     // const heightDiff = this.targetHeight - this.previousHeight;
 
     this.widthDiff = Math.abs(widthDiff);
     this.heightDiff = Math.abs(heightDiff);
 
-    console.log('widthDiff', widthDiff);
+    this.scaleXDiff = Math.abs(scaleXDiff);
+    this.scaleYDiff = Math.abs(scaleYDiff);
 
-    if (widthDiff > 0) {
+    // console.log('scaleXDiff', scaleXDiff);
+
+    if (scaleXDiff > 0) {
       this.isWider = 2;
-    } else if (widthDiff === 0) {
+    } else if (scaleXDiff === 0) {
       this.isWider = 0;
     } else {
       this.isWider = 1;
     }
 
-    if (heightDiff > 0) {
+    if (scaleYDiff > 0) {
       this.isTaller = 2;
-    } else if (heightDiff === 0) {
+    } else if (scaleYDiff === 0) {
       this.isTaller = 0;
     } else {
       this.isTaller = 1;
     }
 
-    this.screenWidth = this.widthDiff;
-    this.screenHeight = this.heightDiff;
-    this.currentWidth = this.widthDiff;
-    this.currentHeight = this.heightDiff;
+    // this.screenWidth = this.widthDiff;
+    // this.screenHeight = this.heightDiff;
+    // this.currentWidth = this.widthDiff;
+    // this.currentHeight = this.heightDiff;
+
+    this.screenScaleX = this.scaleXDiff;
+    this.screenScaleY = this.scaleYDiff;
+    this.currentScaleX = this.scaleXDiff;
+    this.currentScaleY = this.scaleYDiff;
   }
 
   onStart() {
@@ -379,11 +467,21 @@ export default class FollowNav {
 
     this.toggle = true;
 
-    const { x, width, height } = this.dropdownBackground;
+    const {
+      x: dropdownArrowX,
+    } = this.dropdownArrow;
 
-    this.initialX = x;
-    this.initialWidth = width;
-    this.initialHeight = height;
+    const {
+      x: dropdownBackgroundX,
+      width: dropdownBackgroundWidth,
+      height: dropdownBackgroundHeight,
+    } = this.dropdownBackground;
+
+    this.dropdownArrowInitialX = dropdownArrowX;
+    this.initialX = dropdownBackgroundX;
+
+    this.initialWidth = dropdownBackgroundWidth;
+    this.initialHeight = dropdownBackgroundHeight;
 
     this.onManageTime();
   }
@@ -425,15 +523,29 @@ export default class FollowNav {
 
     if (!this.firstTriggerEntry) {
       // Easy Easing Timing Function
+      this.dropdownArrowScreenX += 0 - this.dropdownArrowScreenX / frameRate;
       this.screenX += 0 - this.screenX / frameRate;
       this.screenWidth += 0 - this.screenWidth / frameRate;
       this.screenHeight += 0 - this.screenHeight / frameRate;
+      this.screenScaleX += 0 - this.screenScaleX / frameRate;
+      this.screenScaleY += 0 - this.screenScaleY / frameRate;
 
       // Convert to a progress amount
+      this.dropdownArrowProgressX = (this.dropdownArrowDistanceX - this.dropdownArrowScreenX);
       this.progressX = (this.distanceX - this.screenX);
       this.progressWidth = (this.widthDiff - this.screenWidth);
       this.progressHeight = (this.heightDiff - this.screenHeight);
+      this.progressScaleX = (this.scaleXDiff - this.screenScaleX);
+      this.progressScaleY = (this.scaleYDiff - this.screenScaleY);
 
+      // DropdownArrow X
+      if (this.dropdownArrowDirectionX === 1) { // Navigate Forwards
+        this.dropdownArrowCurrentX = this.dropdownArrowInitialX + this.dropdownArrowProgressX;
+      } else { // Navigate Backwards
+        this.dropdownArrowCurrentX = this.dropdownArrowInitialX - this.dropdownArrowProgressX;
+      }
+
+      // DropdownBackground X
       if (this.directionX === 1) { // Navigate Forwards
         this.currentX = this.initialX + this.progressX;
       } else { // Navigate Backwards
@@ -442,43 +554,31 @@ export default class FollowNav {
 
       if (this.isWider !== 0) { // Not same width
         if (this.isWider === 1) { // Shrink
-          this.currentWidth = this.initialWidth + this.progressWidth;
+          this.currentScaleX = this.initialScaleX - this.progressScaleX;
         } else { // Grow
-          this.currentWidth = this.initialWidth - this.progressWidth;
+          this.currentScaleX = this.initialScaleX + this.progressScaleX;
         }
-        this.scaleX = this.currentWidth / this.initialWidth;
+        this.scaleX = this.currentScaleX;
         this.dropdownBackground.scaleX = this.scaleX;
       }
 
       if (this.isTaller !== 0) { // Not same height
         if (this.isTaller === 1) { // Shrink
-          this.currentHeight = this.initialHeight + this.progressHeight;
+          this.currentScaleY = this.initialScaleY - this.progressScaleY;
         } else { // Grow
-          this.currentHeight = this.initialHeight - this.progressHeight;
+          this.currentScaleY = this.initialScaleY + this.progressScaleY;
         }
-        this.scaleY = this.currentHeight / this.initialHeight;
+        this.scaleY = this.currentScaleY;
         this.dropdownBackground.scaleY = this.scaleY;
       }
 
+      this.dropdownArrow.x = this.dropdownArrowCurrentX;
       this.dropdownBackground.x = this.currentX;
     }
 
     if (!this.toggle) {
       this.terminate();
     }
-
-    // console.log('initialWidth', this.initialWidth);
-    // console.log('widthDiff', this.widthDiff);
-    // console.log('heightDiff', this.heightDiff);
-    // console.log('currentWidth', this.currentWidth);
-    // console.log('currentHeight', this.currentHeight);
-    // console.log('directionX', this.directionX);
-    // console.log('targetWidth', this.targetWidth);
-    // console.log('currenX', this.currentX);
-    // console.log('progressWidth', this.progressWidth);
-    // console.log('screenX', this.screenX);
-    // console.log('Finish Loop --');
-    // console.log('Finish Loop ======');
   }
 
   update(deltaTime) {
@@ -494,6 +594,7 @@ export default class FollowNav {
 
   draw() {
     // Draw based on simulated results
+    this.dropdownArrow.move();
     this.dropdownBackground.move();
   }
 
@@ -509,8 +610,10 @@ export default class FollowNav {
   }
 
   resetDimensions() {
-    this.currentWidth = null;
-    this.currentHeight = null;
+    // this.currentWidth = null;
+    // this.currentHeight = null;
+    this.currentScaleX = null;
+    this.currentScaleY = null;
     this.initialWidth = null;
     this.initialHeight = null;
     this.isTaller = null;
@@ -519,10 +622,16 @@ export default class FollowNav {
     this.previousHeight = null;
     this.progressWidth = null;
     this.progressHeight = null;
+    this.progressScaleX = null;
+    this.progressScaleY = null;
+    this.screenScaleX = null;
+    this.screenScaleY = null;
     this.scaleX = null;
     this.scaleY = null;
-    this.screenWidth = null;
-    this.screenHeight = null;
+    this.scaleXDiff = null;
+    this.scaleYDiff = null;
+    // this.screenWidth = null;
+    // this.screenHeight = null;
     this.targetWidth = null;
     this.targetHeight = null;
     this.targetScaleX = null;
@@ -538,6 +647,14 @@ export default class FollowNav {
     this.progressX = null;
     this.screenX = null;
     this.targetX = null;
+
+    this.dropdownArrowInitialX = null;
+    this.dropdownArrowDistanceX = null;
+    this.dropdownArrowDirectionX = null;
+    this.dropdownArrowScreenX = null;
+    this.dropdownArrowCurrentX = null;
+    this.dropdownArrowProgressX = null;
+    this.dropdownArrowTargetX = null;
   }
 
   resetTimers() {
