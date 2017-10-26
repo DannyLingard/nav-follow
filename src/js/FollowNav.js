@@ -238,7 +238,7 @@ export default class FollowNav {
     console.log('====================================');
 
 
-    // this.dropdownBackground.expand();
+    this.dropdownBackground.expand();
   }
 
   handleTriggerExit() {
@@ -246,7 +246,7 @@ export default class FollowNav {
     this.activeTrigger = null;
     // this.dropdownBackground.x = 0;
 
-    // this.dropdownBackground.collapse();
+    this.dropdownBackground.collapse();
 
     // Persist Previous Trigger Attributes
     this.initialX = this.targetX;

@@ -16,7 +16,7 @@ export default class DropdownBackground {
     this.init();
     this.calculateGeometries();
 
-    this.debug();
+    // this.debug();
   }
 
   init() {
