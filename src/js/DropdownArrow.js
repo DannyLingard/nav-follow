@@ -58,6 +58,15 @@ export default class DropdownArrow {
 
   init() {
     this.move();
+    this.collapse();
+  }
+
+  collapse() {
+    this.elem.setAttribute('aria-expanded', 'false');
+  }
+
+  expand() {
+    this.elem.setAttribute('aria-expanded', 'true');
   }
 
   move() {

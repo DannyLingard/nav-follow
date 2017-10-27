@@ -2,13 +2,23 @@ import DropdownArrow from './DropdownArrow';
 import DropdownBackground from './DropdownBackground';
 import Trigger from './Trigger';
 
+// Utils
+import { calculateGeometry } from './utils/geometry';
+
 export default class FollowNav {
-  constructor(elem, triggerSelector, triggerDropdownSelector, dropdownArrowSelector, dropdownBackgroundSelector) {
+  constructor(
+    elem,
+    triggerSelector,
+    triggerDropdownSelector,
+    dropdownArrowSelector,
+    dropdownBackgroundSelector,
+  ) {
     this._elem = null;
     this._geometries = null;
 
     // Setters
     this.elem = elem;
+    this.geometries = calculateGeometry(this.elem);
 
     // Triggers
     this.triggerSelector = triggerSelector;
@@ -39,70 +49,25 @@ export default class FollowNav {
     // Movements
     this.accumParentX = 0;
     this.parentX = null;
-
-    this.initialX = null;
-    this.distanceX = null;
-    this.directionX = null;
-    this.screenX = null;
-    this.currentX = null;
-    this.progressX = null;
-    this.targetX = null;
-
-    this.dropdownArrowInitialX = null;
-    this.dropdownArrowDistanceX = null;
-    this.dropdownArrowDirectionX = null;
-    this.dropdownArrowScreenX = null;
-    this.dropdownArrowCurrentX = null;
-    this.dropdownArrowProgressX = null;
-    this.dropdownArrowTargetX = null;
+    this.calculateParentX(this.elem);
 
     // Dimensions
-    this.initialWidth = null;
-    this.initialHeight = null;
-    this.targetWidth = null;
-    this.targetHeight = null;
-    this.widthDiff = null;
-    this.heightDiff = null;
-    this.isWider = null;
-    this.isTaller = null;
-    // this.screenWidth = null;
-    // this.currentWidth = null;
-    this.previousWidth = null;  // from previous trigger
-    this.previousHeight = null; // from previous trigger
-    this.progressWidth = null;
-    // this.screenHeight = null;
-    // this.currentHeight = null;
-    this.progressHeight = null;
+    this.instantiateDimensions();
 
     // Scale X & Y
-    this.initialScaleX = null;  // from previous trigger
-    this.initialScaleY = null; // from previous trigger
-    this.screenScaleX = null;
-    this.screenScaleY = null;
-    this.currentScaleX = null;
-    this.currentScaleY = null;
-    this.previousScaleX = null;  // from previous trigger
-    this.previousScaleY = null; // from previous trigger
-    this.progressScaleX = null;
-    this.progressScaleY = null;
-    this.scaleX = null;
-    this.scaleY = null;
-    this.scaleXDiff = null;
-    this.scaleYDiff = null;
-    this.targetScaleX = null;
-    this.targetScaleY = null;
+    this.instantiateMeasures();
 
     // Game Times
-    this._lastTime = 0;
-    this._accumlator = 0;
     this.step = 1 / 120;
-    this._frame = 0;
-
     this.requestAnimationFrameId = null;
-
     this.toggle = false;
+    this.instantiateTimers();
 
-    this.calculateGeometries();
+    // Validators & Checkers
+    this.hasReachedTargetX = false;
+    this.trackingThreshold = 0.01;
+    this.trackingX = null;
+    this.dropdownArrowTrackingX = null;
 
     // Triggers Creation
     this.assignTriggerElems();
@@ -119,6 +84,10 @@ export default class FollowNav {
     this.addEventListeners();
   }
 
+  /*---------------
+  Getters & Setters
+  ----------------*/
+
   get elem() {
     return this._elem;
   }
@@ -133,6 +102,67 @@ export default class FollowNav {
 
   set geometries(obj) {
     this._geometries = obj;
+  }
+
+  /*---------------
+  Private Members
+  ----------------*/
+
+  instantiateDimensions() {
+    this.initialWidth = null;
+    this.initialHeight = null;
+    this.targetWidth = null;
+    this.targetHeight = null;
+    this.widthDiff = null;
+    this.heightDiff = null;
+    this.isWider = null;
+    this.isTaller = null;
+    this.previousWidth = null;  // from previous trigger
+    this.previousHeight = null; // from previous trigger
+    this.progressWidth = null;
+    this.progressHeight = null;
+  }
+
+  instantiateMeasures() {
+    this.initialScaleX = null;  // from previous trigger
+    this.initialScaleY = null; // from previous trigger
+    this.screenScaleX = null;
+    this.screenScaleY = null;
+    this.currentScaleX = null;
+    this.currentScaleY = null;
+    this.previousScaleX = null;  // from previous trigger
+    this.previousScaleY = null; // from previous trigger
+    this.progressScaleX = null;
+    this.progressScaleY = null;
+    this.scaleX = null;
+    this.scaleY = null;
+    this.scaleXDiff = null;
+    this.scaleYDiff = null;
+    this.targetScaleX = null;
+    this.targetScaleY = null;
+  }
+
+  instantiateMovements() {
+    this.initialX = null;
+    this.distanceX = null;
+    this.directionX = null;
+    this.screenX = null;
+    this.currentX = null;
+    this.progressX = null;
+    this.targetX = null;
+
+    this.dropdownArrowInitialX = null;
+    this.dropdownArrowDistanceX = null;
+    this.dropdownArrowDirectionX = null;
+    this.dropdownArrowScreenX = null;
+    this.dropdownArrowCurrentX = null;
+    this.dropdownArrowProgressX = null;
+    this.dropdownArrowTargetX = null;
+  }
+
+  instantiateTimers() {
+    this._lastTime = 0;
+    this._accumlator = 0;
   }
 
   addEventListeners() {
@@ -215,38 +245,37 @@ export default class FollowNav {
       this.dropdownBackground.scaleY = this.targetScaleY;
     }
 
-
-    // console.log('InitialX', this.initialX);
-    // console.log('TargetX', this.targetX);
-    // console.log('TargetScaleY', this.targetScaleY);
-
     this.initializeMeasures();
     this.initializeDimensions();
 
-    console.log('====================================');
-    console.log('-- ScaleX   ------------------------');
-    console.log('currentScaleX', this.currentScaleX);
-    console.log('initialScaleX', this.initialScaleX);
-    console.log('screenScaleX', this.screenScaleX);
-    console.log('scaleXDiff', this.scaleXDiff);
-    console.log('TargetScaleX', this.targetScaleX);
-    console.log('-- Width    ------------------------');
-    console.log('isWider', this.isWider);
-    console.log('previousWidth', this.previousWidth);
-    console.log('targetWidth', this.targetWidth);
-    console.log('initialWidth', this.initialWidth);
-    console.log('====================================');
-
+    // console.log('====================================');
+    // console.log('-- Trigger  ------------------------');
+    // console.log('activeTrigger', this.activeTrigger);
+    // console.log('-- ScaleX   ------------------------');
+    // console.log('currentScaleX', this.currentScaleX);
+    // console.log('initialScaleX', this.initialScaleX);
+    // console.log('screenScaleX', this.screenScaleX);
+    // console.log('scaleXDiff', this.scaleXDiff);
+    // console.log('TargetScaleX', this.targetScaleX);
+    // console.log('initialX', this.initialX);
+    // console.log('targetX', this.targetX);
+    // console.log('-- Width    ------------------------');
+    // console.log('isWider', this.isWider);
+    // console.log('previousWidth', this.previousWidth);
+    // console.log('targetWidth', this.targetWidth);
+    // console.log('initialWidth', this.initialWidth);
+    // console.log('====================================');
 
     this.dropdownBackground.expand();
+    this.dropdownArrow.expand();
   }
 
   handleTriggerExit() {
-    // console.log('Trigger Exit ============');
     this.activeTrigger = null;
     // this.dropdownBackground.x = 0;
 
     this.dropdownBackground.collapse();
+    this.dropdownArrow.collapse();
 
     // Persist Previous Trigger Attributes
     this.initialX = this.targetX;
@@ -261,42 +290,19 @@ export default class FollowNav {
     this.initialScaleY = this.targetScaleY;
 
     this.firstTriggerEntry = false;
-  }
-
-  calculateGeometries() {
-    const geometries = this.elem.getBoundingClientRect();
-    // console.log('====================================');
-    // console.log(geometries);
-    // console.log('====================================');
-    this.geometries = geometries;
-
-    // const elem = this.elem;
-
-    this.calculateParentX(this.elem);
-
-    // function getParentX(e) {
-    //   const parent = e.parentNode;
-    //   const geo = e.getBoundingClientRect();
-    //   const { x, width } = geo;
-    //   this.accumParentX += x;
-
-    //   if (e.tagName !== 'BODY') {
-    //     getParentX(parent);
-    //   }
-    // }
 
     // console.log('====================================');
-    // console.log(accum - this.geometries.x);
+    // console.log('Tigger Exit');
+    // console.log('initialX', this.initialX);
+    // console.log('targetX', this.targetX);
     // console.log('====================================');
   }
 
   calculateParentX(e) {
     const parent = e.parentNode;
     const geo = e.getBoundingClientRect();
-    const { x, width } = geo;
-    // console.log('====================================');
-    // console.log('Parent', e.tagName, x);
-    // console.log('====================================');
+    const { x } = geo;
+
     if (!this.parentX) {
       this.accumParentX += x;
     }
@@ -318,8 +324,6 @@ export default class FollowNav {
       this.maxDropdownArea = area;
       this.maxDropdownAreaWidth = width;
       this.maxDropdownAreaHeight = height;
-
-      // this.dropdownBackground.width
     }
 
     if (this.maxDropdownArea < area) {
@@ -332,8 +336,6 @@ export default class FollowNav {
   calculateScaleX() {
     if (!this.firstTriggerEntry) {
       if (this.isWider !== 0) {
-        // console.log('isWider');
-        // this.targetScaleX = this.targetWidth / (this.previousWidth - this.initialWidth);
         this.targetScaleX = this.targetWidth / this.initialWidth;
       } else {
         this.targetScaleX = this.targetWidth / this.initialWidth;
@@ -346,7 +348,6 @@ export default class FollowNav {
   calculateScaleY() {
     if (!this.firstTriggerEntry) {
       if (this.isTaller !== 0) {
-        // this.targetScaleY = this.targetHeight / (this.previousHeight - this.initialHeight);
         this.targetScaleY = this.targetHeight / this.initialHeight;
       } else {
         this.targetScaleY = this.targetHeight / this.initialHeight;
@@ -416,16 +417,12 @@ export default class FollowNav {
 
     const scaleXDiff = this.targetScaleX - this.initialScaleX;
     const scaleYDiff = this.targetScaleY - this.initialScaleY;
-    // const widthDiff = this.targetWidth - this.previousWidth;
-    // const heightDiff = this.targetHeight - this.previousHeight;
 
     this.widthDiff = Math.abs(widthDiff);
     this.heightDiff = Math.abs(heightDiff);
 
     this.scaleXDiff = Math.abs(scaleXDiff);
     this.scaleYDiff = Math.abs(scaleYDiff);
-
-    // console.log('scaleXDiff', scaleXDiff);
 
     if (scaleXDiff > 0) {
       this.isWider = 2;
@@ -443,11 +440,6 @@ export default class FollowNav {
       this.isTaller = 1;
     }
 
-    // this.screenWidth = this.widthDiff;
-    // this.screenHeight = this.heightDiff;
-    // this.currentWidth = this.widthDiff;
-    // this.currentHeight = this.heightDiff;
-
     this.screenScaleX = this.scaleXDiff;
     this.screenScaleY = this.scaleYDiff;
     this.currentScaleX = this.scaleXDiff;
@@ -457,8 +449,9 @@ export default class FollowNav {
   onStart() {
     console.log('Starting');
     this.resetTimers();
-    this.resetMovements();
     this.resetDimensions();
+    this.resetMeasures();
+    this.resetMovements();
 
     // Initiate Trigger Elements
     this.triggers.forEach((trigger) => {
@@ -483,7 +476,7 @@ export default class FollowNav {
     this.initialWidth = dropdownBackgroundWidth;
     this.initialHeight = dropdownBackgroundHeight;
 
-    this.onManageTime();
+    this.addRequestAnimationFrame();
   }
 
   onEnd() {
@@ -492,11 +485,12 @@ export default class FollowNav {
       trigger.hybernate();
     });
     this.toggle = false;
-    this.firstTriggerEntry = true;
+    // this.firstTriggerEntry = true;
 
-    this.resetTimers();
-    this.resetMovements();
-    this.resetDimensions();
+    // this.resetDimensions();
+    // this.resetMeasures();
+    // this.resetMovements();
+    // this.resetTimers();
   }
 
   addRequestAnimationFrame = () => {
@@ -506,75 +500,108 @@ export default class FollowNav {
   }
 
   onManageTime(millis) {
-    // console.log('Begin Loop ============');
-
-    this.addRequestAnimationFrame();
-    this._frame += 1;
-
     if (this._lastTime) {
       this.update((millis - this._lastTime) / 1000);
       this.draw();
     }
+
     this._lastTime = millis;
+
+    // Control Call of next loop
+    if (this.toggle) {
+      this.addRequestAnimationFrame();
+    }
   }
 
   simulate(deltaTime) {
     const frameRate = deltaTime * (1000);
 
-    if (!this.firstTriggerEntry) {
-      // Easy Easing Timing Function
-      this.dropdownArrowScreenX += 0 - this.dropdownArrowScreenX / frameRate;
-      this.screenX += 0 - this.screenX / frameRate;
-      this.screenWidth += 0 - this.screenWidth / frameRate;
-      this.screenHeight += 0 - this.screenHeight / frameRate;
-      this.screenScaleX += 0 - this.screenScaleX / frameRate;
-      this.screenScaleY += 0 - this.screenScaleY / frameRate;
+    if (this.activeTrigger) {
+      if (!this.firstTriggerEntry) {
+        // Easy Easing Timing Function
+        this.dropdownArrowScreenX += 0 - this.dropdownArrowScreenX / frameRate;
+        this.screenX += 0 - this.screenX / frameRate;
+        this.screenWidth += 0 - this.screenWidth / frameRate;
+        this.screenHeight += 0 - this.screenHeight / frameRate;
+        this.screenScaleX += 0 - this.screenScaleX / frameRate;
+        this.screenScaleY += 0 - this.screenScaleY / frameRate;
 
-      // Convert to a progress amount
-      this.dropdownArrowProgressX = (this.dropdownArrowDistanceX - this.dropdownArrowScreenX);
-      this.progressX = (this.distanceX - this.screenX);
-      this.progressWidth = (this.widthDiff - this.screenWidth);
-      this.progressHeight = (this.heightDiff - this.screenHeight);
-      this.progressScaleX = (this.scaleXDiff - this.screenScaleX);
-      this.progressScaleY = (this.scaleYDiff - this.screenScaleY);
+        // Convert to a progress amount
+        this.dropdownArrowProgressX = (this.dropdownArrowDistanceX - this.dropdownArrowScreenX);
+        this.progressX = (this.distanceX - this.screenX);
+        this.progressWidth = (this.widthDiff - this.screenWidth);
+        this.progressHeight = (this.heightDiff - this.screenHeight);
+        this.progressScaleX = (this.scaleXDiff - this.screenScaleX);
+        this.progressScaleY = (this.scaleYDiff - this.screenScaleY);
 
-      // DropdownArrow X
-      if (this.dropdownArrowDirectionX === 1) { // Navigate Forwards
-        this.dropdownArrowCurrentX = this.dropdownArrowInitialX + this.dropdownArrowProgressX;
-      } else { // Navigate Backwards
-        this.dropdownArrowCurrentX = this.dropdownArrowInitialX - this.dropdownArrowProgressX;
-      }
-
-      // DropdownBackground X
-      if (this.directionX === 1) { // Navigate Forwards
-        this.currentX = this.initialX + this.progressX;
-      } else { // Navigate Backwards
-        this.currentX = this.initialX - this.progressX;
-      }
-
-      if (this.isWider !== 0) { // Not same width
-        if (this.isWider === 1) { // Shrink
-          this.currentScaleX = this.initialScaleX - this.progressScaleX;
-        } else { // Grow
-          this.currentScaleX = this.initialScaleX + this.progressScaleX;
+        // DropdownArrow X
+        if (this.dropdownArrowDirectionX === 1) { // Navigate Forwards
+          this.dropdownArrowCurrentX = this.dropdownArrowInitialX + this.dropdownArrowProgressX;
+        } else { // Navigate Backwards
+          this.dropdownArrowCurrentX = this.dropdownArrowInitialX - this.dropdownArrowProgressX;
         }
-        this.scaleX = this.currentScaleX;
-        this.dropdownBackground.scaleX = this.scaleX;
-      }
 
-      if (this.isTaller !== 0) { // Not same height
-        if (this.isTaller === 1) { // Shrink
-          this.currentScaleY = this.initialScaleY - this.progressScaleY;
-        } else { // Grow
-          this.currentScaleY = this.initialScaleY + this.progressScaleY;
+        // DropdownBackground X
+        if (this.directionX === 1) { // Navigate Forwards
+          this.currentX = this.initialX + this.progressX;
+        } else { // Navigate Backwards
+          this.currentX = this.initialX - this.progressX;
         }
-        this.scaleY = this.currentScaleY;
-        this.dropdownBackground.scaleY = this.scaleY;
-      }
 
-      this.dropdownArrow.x = this.dropdownArrowCurrentX;
-      this.dropdownBackground.x = this.currentX;
+        if (this.isWider !== 0) { // Not same width
+          if (this.isWider === 1) { // Shrink
+            this.currentScaleX = this.initialScaleX - this.progressScaleX;
+          } else { // Grow
+            this.currentScaleX = this.initialScaleX + this.progressScaleX;
+          }
+          this.scaleX = this.currentScaleX;
+          this.dropdownBackground.scaleX = this.scaleX;
+        }
+
+        if (this.isTaller !== 0) { // Not same height
+          if (this.isTaller === 1) { // Shrink
+            this.currentScaleY = this.initialScaleY - this.progressScaleY;
+          } else { // Grow
+            this.currentScaleY = this.initialScaleY + this.progressScaleY;
+          }
+          this.scaleY = this.currentScaleY;
+          this.dropdownBackground.scaleY = this.scaleY;
+        }
+
+        this.trackingX = Math.abs(this.currentX - this.targetX);
+        this.dropdownArrowTrackingX = Math.abs(this.dropdownArrowCurrentX - this.dropdownArrowTargetX);
+
+        // Overwrite this.current values if less than threshold
+        if (this.trackingX <= this.trackingThreshold) {
+          this.dropdownBackground.x = this.targetX;
+        } else {
+          this.dropdownBackground.x = this.currentX;
+        }
+
+        if (this.dropdownArrowTrackingX <= this.trackingThreshold) {
+          this.dropdownArrow.x = this.dropdownArrowTargetX;
+        } else {
+          this.dropdownArrow.x = this.dropdownArrowCurrentX;
+        }
+
+        // this.dropdownArrow.x = this.dropdownArrowCurrentX;
+        // this.dropdownBackground.x = this.currentX;
+
+        // console.log('====================================');
+        // console.log('Check Target X');
+        // console.log(this.currentX - this.targetX);
+        // // console.log(this.currentX === this.targetX);
+        // console.log('====================================');
+        // console.log('====================================');
+        // console.log('currentX', this.currentX);
+        // console.log('distanceX', this.distanceX);
+        // console.log('directionX', this.directionX);
+        // console.log('progressX', this.progressX);
+        // console.log('screenX', this.screenX);
+        // console.log('====================================');
+      }
     }
+
 
     if (!this.toggle) {
       this.terminate();
@@ -586,21 +613,18 @@ export default class FollowNav {
     this._accumlator += deltaTime;
 
     while (this._accumlator > this.step) {
-      // console.log('updating accum');
       this.simulate(this.step);
       this._accumlator -= this.step;
     }
   }
 
   draw() {
-    // Draw based on simulated results
     this.dropdownArrow.move();
     this.dropdownBackground.move();
   }
 
   logTimers() {
     console.log('==================');
-    // console.log('Loop', this._frame);
     // console.log('Millies', millis);
     console.log('RAF', this.requestAnimationFrameId);
     console.log('lastTime', this._lastTime);
@@ -610,58 +634,19 @@ export default class FollowNav {
   }
 
   resetDimensions() {
-    // this.currentWidth = null;
-    // this.currentHeight = null;
-    this.currentScaleX = null;
-    this.currentScaleY = null;
-    this.initialWidth = null;
-    this.initialHeight = null;
-    this.isTaller = null;
-    this.isWider = null;
-    this.previousWidth = null;
-    this.previousHeight = null;
-    this.progressWidth = null;
-    this.progressHeight = null;
-    this.progressScaleX = null;
-    this.progressScaleY = null;
-    this.screenScaleX = null;
-    this.screenScaleY = null;
-    this.scaleX = null;
-    this.scaleY = null;
-    this.scaleXDiff = null;
-    this.scaleYDiff = null;
-    // this.screenWidth = null;
-    // this.screenHeight = null;
-    this.targetWidth = null;
-    this.targetHeight = null;
-    this.targetScaleX = null;
-    this.targetScaleY = null;
+    this.instantiateDimensions();
+  }
+
+  resetMeasures() {
+    this.instantiateMeasures();
   }
 
   resetMovements() {
-    console.log('Reset Measures');
-    this.currentX = null;
-    this.directionX = null;
-    this.distanceX = null;
-    this.initialX = null;
-    this.progressX = null;
-    this.screenX = null;
-    this.targetX = null;
-
-    this.dropdownArrowInitialX = null;
-    this.dropdownArrowDistanceX = null;
-    this.dropdownArrowDirectionX = null;
-    this.dropdownArrowScreenX = null;
-    this.dropdownArrowCurrentX = null;
-    this.dropdownArrowProgressX = null;
-    this.dropdownArrowTargetX = null;
+    this.instantiateMovements();
   }
 
   resetTimers() {
-    // console.log('Reset Timers', this);
-    this._frame = 0;
-    this._lastTime = 0;
-    this._accumlator = 0;
+    this.instantiateTimers();
     this.requestAnimationFrameId = null;
   }
 
@@ -669,12 +654,11 @@ export default class FollowNav {
     console.log('====================================');
     console.log('Terminated');
     console.log('====================================');
-    this.firstTriggerEntry = true;
-    console.log('Cancel RAF', this.requestAnimationFrameId);
+    // console.log('Cancel RAF', this.requestAnimationFrameId);
 
     cancelAnimationFrame(this.requestAnimationFrameId);
 
-    this.toggle = true;
+    this.firstTriggerEntry = true;
     this.resetTimers();
   }
 }

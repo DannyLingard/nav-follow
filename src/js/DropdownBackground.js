@@ -1,3 +1,6 @@
+// Utils
+import { calculateGeometry } from './utils/geometry';
+
 export default class DropdownBackground {
   constructor(elem, width, height) {
     this._elem = null;
@@ -14,36 +17,14 @@ export default class DropdownBackground {
     this.height = height;
 
     this.init();
-    this.calculateGeometries();
+    this.geometries = calculateGeometry(this.elem);
 
     // this.debug();
   }
 
-  init() {
-    this.elem.style.width = `${this.width}px`;
-    this.elem.style.height = `${this.height}px`;
-    this.collapse();
-  }
-
-  debug() {
-    this.expand();
-  }
-
-  calculateGeometries() {
-    this.geometries = this.elem.getBoundingClientRect();
-  }
-
-  expand() {
-    this.elem.setAttribute('aria-expanded', 'true');
-  }
-
-  collapse() {
-    this.elem.setAttribute('aria-expanded', 'false');
-  }
-
-  move() {
-    this.elem.style.transform = `translateX(${this._x}px) scaleX(${this._scaleX}) scaleY(${this._scaleY})`;
-  }
+  /*---------------
+  Getters & Setters
+  ----------------*/
 
   get elem() {
     return this._elem;
@@ -99,5 +80,31 @@ export default class DropdownBackground {
 
   set scaleY(value) {
     this._scaleY = value;
+  }
+
+  /*---------------
+  Methods
+  ----------------*/
+
+  init() {
+    this.elem.style.width = `${this.width}px`;
+    this.elem.style.height = `${this.height}px`;
+    this.collapse();
+  }
+
+  debug() {
+    this.expand();
+  }
+
+  expand() {
+    this.elem.setAttribute('aria-expanded', 'true');
+  }
+
+  collapse() {
+    this.elem.setAttribute('aria-expanded', 'false');
+  }
+
+  move() {
+    this.elem.style.transform = `translateX(${this._x}px) scaleX(${this._scaleX}) scaleY(${this._scaleY})`;
   }
 }

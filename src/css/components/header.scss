@@ -84,6 +84,17 @@ nav {
 	background: #fff;
 	box-shadow: -3px -3px 5px rgba(82,95,127,.04);
 	will-change: transform;	
+
+	// Attribute States
+	&[aria-expanded="true"] {
+		transition: opacity 0.1s ease-in;
+		opacity: 1;		
+	}
+	
+	&[aria-expanded="false"] {
+		transition: opacity 0.05s ease-out;
+		opacity: 0;		
+	}
 }
 
 .nav-dropdown_background {
@@ -106,14 +117,16 @@ nav {
 	// transition: transform 0.2s ease-in;
 	transform-origin: top center;
 	pointer-events: none;
-	opacity: 0;
+	// opacity: 0;
 	
 	// Attribute States
 	&[aria-expanded="true"] {
+		transition: opacity 0.1s ease-in;
 		opacity: 1;		
 	}
 	
 	&[aria-expanded="false"] {
+		transition: opacity 0.05s ease-out;
 		opacity: 0;		
 	}
 }
@@ -176,6 +189,8 @@ nav {
 		text-decoration: none;
 		letter-spacing: 0.2px;
 		color: $background-light;
+		user-select: none;
+		cursor: default;
 		overflow: hidden;
 	}
 }
@@ -215,6 +230,7 @@ nav {
 		text-decoration: none;
 		letter-spacing: 0.2px;
 		color: $background-light;
+		user-select: none;
 		overflow: hidden;
 	}
 }
@@ -255,7 +271,7 @@ nav {
 	}
 	
 	&[aria-expanded="false"] {
-		transition: opacity 0.1s ease-out;
+		transition: opacity 0.05s ease-out;
 		pointer-events: none;
 		opacity: 0;		
 	}
